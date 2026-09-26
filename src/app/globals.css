@@ -1,27 +1,455 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================
+   CSS CUSTOM PROPERTIES — BOLD CREATIVE PALETTE
+   ===================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dark mode — deep ink + electric vermillion */
+  --bg: #080808;
+  --bg-surface: #0F0F0F;
+  --bg-surface-2: #161616;
+  --text-primary: #F0EAE0;
+  --text-secondary: #7A746C;
+  --accent: #FF4D00;
+  --accent-muted: rgba(255, 77, 0, 0.12);
+  --accent-2: #E8D5B0;
+  --border-subtle: #1A1A1A;
+  --border: #252525;
+
+  /* Fonts */
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-jetbrains: 'JetBrains Mono', monospace;
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-editorial: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Layout */
+  --nav-height: 64px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.light {
+  --bg: #F5F0E8;
+  --bg-surface: #FDFAF5;
+  --bg-surface-2: #EDE8DF;
+  --text-primary: #100E0C;
+  --text-secondary: #6B6560;
+  --accent: #FF4D00;
+  --accent-muted: rgba(255, 77, 0, 0.10);
+  --accent-2: #8B6A3E;
+  --border-subtle: #E2DDD6;
+  --border: #CECAC3;
+}
+
+/* =====================================================
+   BASE RESET
+   ===================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-inter);
+  font-size: 1rem;
+  line-height: 1.7;
+  overflow-x: hidden;
+  transition: background-color 0.4s var(--ease-editorial),
+              color 0.4s var(--ease-editorial);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Show default cursor on touch devices */
+@media (pointer: coarse) {
+  body { cursor: auto; }
 }
+
+/* Lenis smooth scroll */
+html.lenis { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* =====================================================
+   NOISE GRAIN OVERLAY — Full page texture
+   ===================================================== */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  animation: noiseShift 0.5s steps(1) infinite;
+}
+
+@keyframes noiseShift {
+  0%, 100% { background-position: 0 0; }
+  10% { background-position: -5% -5%; }
+  20% { background-position: 10% 10%; }
+  30% { background-position: -15% 5%; }
+  40% { background-position: 15% -10%; }
+  50% { background-position: -5% 15%; }
+  60% { background-position: 10% -15%; }
+  70% { background-position: -15% 10%; }
+  80% { background-position: 15% 5%; }
+  90% { background-position: -5% -15%; }
+}
+
+/* =====================================================
+   CUSTOM CURSOR
+   ===================================================== */
+
+.cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.3s var(--ease-out-expo), height 0.3s var(--ease-out-expo), opacity 0.3s;
+  mix-blend-mode: normal;
+}
+
+.cursor-ring {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 77, 0, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s var(--ease-out-expo), height 0.4s var(--ease-out-expo),
+              opacity 0.3s, border-color 0.3s, transform 0.08s;
+}
+
+.cursor-dot.is-hovering { width: 10px; height: 10px; }
+.cursor-ring.is-hovering { width: 60px; height: 60px; border-color: var(--accent); }
+.cursor-dot.is-clicking { transform: translate(-50%, -50%) scale(0.6); }
+
+/* =====================================================
+   TYPOGRAPHY
+   ===================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-inter);
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+p { color: var(--text-secondary); }
+a { color: inherit; text-decoration: none; }
+
+/* =====================================================
+   FOCUS & SELECTION
+   ===================================================== */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--accent);
+  color: #080808;
+}
+
+/* =====================================================
+   SCROLLBAR
+   ===================================================== */
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); }
+
+/* =====================================================
+   LAYOUT UTILITIES
+   ===================================================== */
+
+.site-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+}
+
+.section-gap { padding-block: clamp(5rem, 10vw, 10rem); }
+.section-gap-sm { padding-block: clamp(3rem, 6vw, 6rem); }
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.label {
+  font-family: var(--font-jetbrains);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* =====================================================
+   TEXT REVEAL ANIMATION
+   ===================================================== */
+
+.reveal-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.reveal-word-inner {
+  display: inline-block;
+  transform: translateY(100%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.reveal-word-inner.is-visible {
+  animation: wordReveal 0.8s var(--ease-out-expo) forwards;
+}
+
+@keyframes wordReveal {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Char-by-char version */
+.reveal-char {
+  display: inline-block;
+  transform: translateY(60%) skewY(3deg);
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: transform 0.6s var(--ease-out-expo), opacity 0.6s ease;
+}
+
+.reveal-char.is-visible {
+  transform: translateY(0) skewY(0deg);
+  opacity: 1;
+}
+
+/* =====================================================
+   GRADIENT TEXT (accent words)
+   ===================================================== */
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, #FF8C60 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* =====================================================
+   ANIMATED ACCENT LINE
+   ===================================================== */
+
+.accent-line {
+  display: inline-block;
+  position: relative;
+}
+
+.accent-line::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.6s var(--ease-out-expo);
+}
+
+.accent-line.is-visible::after,
+.accent-line:hover::after {
+  width: 100%;
+}
+
+/* =====================================================
+   MARQUEE
+   ===================================================== */
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: inline-flex;
+  animation: marqueeScroll 30s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* =====================================================
+   PROJECT CARD TILT
+   ===================================================== */
+
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+
+/* =====================================================
+   MAGNETIC BUTTON
+   ===================================================== */
+
+.magnetic-btn {
+  position: relative;
+  transition: transform 0.4s var(--ease-out-expo);
+  will-change: transform;
+}
+
+/* =====================================================
+   ANIMATED BORDER (draw-in effect)
+   ===================================================== */
+
+.draw-border {
+  position: relative;
+}
+
+.draw-border::before,
+.draw-border::after {
+  content: '';
+  position: absolute;
+  background: var(--accent);
+  transition: transform 0.6s var(--ease-out-expo);
+}
+
+/* =====================================================
+   FLOATING BADGE
+   ===================================================== */
+
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0px) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(-3deg); }
+}
+
+.float-badge {
+  animation: floatBadge 4s ease-in-out infinite;
+}
+
+/* =====================================================
+   COUNTER NUMBER
+   ===================================================== */
+
+.counter-number {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* =====================================================
+   SCRAMBLE TEXT
+   ===================================================== */
+
+.scramble-text {
+  font-family: var(--font-jetbrains);
+  color: var(--accent);
+}
+
+/* =====================================================
+   SECTION NUMBERS (editorial)
+   ===================================================== */
+
+.section-number {
+  font-family: var(--font-jetbrains);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  opacity: 0.6;
+}
+
+/* =====================================================
+   THREE.JS CANVAS
+   ===================================================== */
+
+.r3f-canvas {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+}
+
+/* =====================================================
+   GLOBAL KEYFRAMES
+   ===================================================== */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* =====================================================
+   SHINY TEXT — metallic light sweep on hover
+   Used on accent words, not everything (non-slop)
+   ===================================================== */
+
+.shiny-text {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.shiny-text::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0s;
+}
+
+.shiny-text:hover::after {
+  transform: translateX(100%);
+  transition: transform 0.6s ease;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (pointer: coarse) {
+  .cursor-dot, .cursor-ring { display: none; }
+}
+
